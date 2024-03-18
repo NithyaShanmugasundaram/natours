@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+const User = require('./userModel');
 // const validator = require('validator');
 
 const tourSchema = new mongoose.Schema(
@@ -77,8 +78,40 @@ const tourSchema = new mongoose.Schema(
     secretTour: {
       type: Boolean,
       default: false
-    }
+    },
+  
+  startLocation: {
+    // GeoJSON
+    type: {
+      type: String,
+      default: 'Point',
+      enum: ['Point']
+    },
+    coordinates: [Number],
+    address: String,
+    description: String
   },
+  locations: [
+    {
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point']
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+      day: Number
+    }
+  ],
+  guides: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: 'User'
+    }
+  ]
+ // guides:Array,
+},
   {
     toJSON: { virtuals: true },
     toObject: { virtuals: true }
@@ -94,8 +127,20 @@ tourSchema.pre('save', function(next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
+//Embedded the user details into tour modal//easy to create new document, but everytime when you update user modal then need to update the tour modal as well, which is not user friendly
+//better way to do is referencing
+// tourSchema.pre('save', async function(next) {
+//   const guidePromises=this.guides.map(async(id)=>await User.findById(id));
+//   this.guides=await Promise.all(guidePromises)
+//   next();
+// });
+//Reference the user details into tour modal
+tourSchema.pre(/^find/,  function(next) {
+   this.populate({path:"guides",select:'-v -passwordChangedAt'})
+  next();
+});
 
-// tourSchema.pre('save', function(next) {
+// tourSchema.pre('save', function(next) {  
 //   console.log('Will save document...');
 //   next();
 // });

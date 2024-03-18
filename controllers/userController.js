@@ -11,8 +11,9 @@ const filterObj = (obj, ...allowedFields) => {
 };
 
 exports.getAllUsers = catchAsync(async (req, res, next) => {
+  console.log(req)
   const users = await User.find();
-
+  console.log({users})
   // SEND RESPONSE
   res.status(200).json({
     status: 'success',
@@ -52,7 +53,8 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 });
 
 exports.deleteMe = catchAsync(async (req, res, next) => {
-  await User.findByIdAndUpdate(req.user.id, { active: false });
+  const user=await User.findByIdAndUpdate(req.user.id, { active: false });
+  console.log({user})
 
   res.status(204).json({
     status: 'success',
